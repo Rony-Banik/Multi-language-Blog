@@ -51,12 +51,7 @@ class BlogController extends Controller
     public function indexOrder(Request $request)
     {
         $statut = session('statut');
-        $posts = $this->blogRepository->getPostsWithOrder(
-            config('app.nbrPages.back.posts'),
-            $statut == 'admin' ? null : $request->user()->id,
-            $request->name,
-            $request->sens
-        );
+        $posts = $this->PostBuilder();
         
         $links = $posts->appends([
             'name' => $request->name,
@@ -71,10 +66,8 @@ class BlogController extends Controller
         }
 
         $links->links();
-
-        $order = new \stdClass;
-        $order->name = $request->name;
-        $order->sens = 'sort-' . $request->sens;
+		
+		$order = $this->OrderBuilder();
 
         return view('back.blog.index', compact('posts', 'links', 'order'));
     }
@@ -151,4 +144,23 @@ class BlogController extends Controller
 
         return redirect('blog')->with('ok', trans('back/blog.destroyed'));
     }
+	
+	private function PostBuilder(){
+		$posts = $this->blogRepository->getPostsWithOrder(
+            config('app.nbrPages.back.posts'),
+            $statut == 'admin' ? null : $request->user()->id,
+            $request->name,
+            $request->sens
+        );
+		
+		return $posts;
+	}
+	
+	private function OrderBuilder{
+		$order = new \stdClass;
+        $order->name = $request->name;
+        $order->sens = 'sort-' . $request->sens;
+		
+		return $order;
+	}
 }
